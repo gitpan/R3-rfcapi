@@ -16,6 +16,9 @@
 	0.30	1999-11-09	schoen
 		added support for R/3 release pre 40A
 		added function r3_clear_itab_fields
+
+	0.31	1999-11-10	schoen
+		added special support for NUMC/N/TYPNUM
 */
 
 
@@ -81,6 +84,9 @@ unsigned r3_exid2type(char c)
 	case 'C':
 		p= TYPC;
 		break;
+	case 'N':
+		p= TYPNUM;
+		break;
 	case 'D':
 		p= TYPDATE;
 		break;
@@ -89,9 +95,6 @@ unsigned r3_exid2type(char c)
 		break;
 	case 'I':
 		p= TYPINT;
-		break;
-	case 'N':
-		p= TYPC;
 		break;
 	case 'P':
 		p= TYPP;
@@ -595,6 +598,10 @@ int r3_clear_itab_fields(H_R3RFC_ITAB h)
 				r3_setchar(h->curr_row+h->fields[fino].offset,
 					h->fields[fino].intlength, value);	
 				break;
+			case TYPNUM:
+				r3_setnum(h->curr_row+h->fields[fino].offset,
+					h->fields[fino].intlength, value);	
+				break;
 			case TYPX:
 				r3_setbyte(h->curr_row+h->fields[fino].offset,
 					h->fields[fino].intlength, value);	
@@ -643,6 +650,11 @@ int r3_set_f_val(H_R3RFC_ITAB h, int fino, char * value)
 	{
 		case TYPC:
 			r3_setchar(h->curr_row+h->fields[fino].offset,
+				h->fields[fino].intlength,
+				value);	
+			break;
+		case TYPNUM:
+			r3_setnum(h->curr_row+h->fields[fino].offset,
 				h->fields[fino].intlength,
 				value);	
 			break;
@@ -697,6 +709,9 @@ char * r3_get_f_val(H_R3RFC_ITAB h, int fino)
 	{
 		case TYPC:
 			return r3_getchar(h->curr_row+h->fields[fino].offset,
+				h->fields[fino].intlength);	
+		case TYPNUM:
+			return r3_getnum(h->curr_row+h->fields[fino].offset,
 				h->fields[fino].intlength);	
 		case TYPX:
 			return r3_getbyte(h->curr_row+h->fields[fino].offset,

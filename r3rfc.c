@@ -11,6 +11,11 @@
 
 	0.30	1999-11-06	schoen
 		changed format string in r3_getfloat
+
+	0.31	1999-11-10	schoen
+		added strlen check in r3_setnum
+		added strlen check in r3_setdate and r3_settime
+
 */
 
 #include <memory.h>
@@ -61,8 +66,13 @@ char * r3_getchar(char * var, size_t n)
 
 void r3_setdate(char * var, char * str)
 {
-	strncpy(var,str,sizeof(RFC_DATE));
-	memset(var+strlen(str),'0',sizeof(RFC_DATE)-strlen(str));
+	size_t l;
+	l=strlen(str);
+	if (l>sizeof(RFC_DATE))
+		l=sizeof(RFC_DATE);
+	strncpy(var,str,l);
+	if (l<sizeof(RFC_DATE))
+		memset(var+l,'0',sizeof(RFC_DATE)-l);
 }
 
 char * r3_getdate(char * var)
@@ -97,9 +107,21 @@ char * r3_getint(long * var)
 
 void r3_setnum(char * var, size_t n, char * str)
 {
-	strncpy(var+n-strlen(str), str, strlen(str)); 
-	if (n>strlen(str)) 
-		memset(var,'0',n-strlen(str));
+	size_t l;
+	l=strlen(str);
+	if (l>n)
+	{
+		strncpy(var, str, n); 
+	}
+	else
+	{
+		if (l>0)
+			strncpy(var+n-l, str, l); 
+	}
+	if (n>l) 
+	{
+		memset(var,'0',n-l);
+	}
 }
 
 char * r3_getnum(char * var, size_t n)
@@ -113,8 +135,13 @@ char * r3_getnum(char * var, size_t n)
 
 void r3_settime(char * var, char * str)
 {
-	strncpy(var,str,sizeof(RFC_TIME));
-	memset(var+strlen(str),'0',sizeof(RFC_TIME)-strlen(str));
+	size_t l;
+	l=strlen(str);
+	if (l>sizeof(RFC_TIME))
+		l=sizeof(RFC_TIME);
+	strncpy(var,str,l);
+	if (l<sizeof(RFC_TIME))
+		memset(var+l,'0',sizeof(RFC_TIME)-l);
 }
 
 char * r3_gettime(char * var)

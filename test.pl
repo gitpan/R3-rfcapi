@@ -20,7 +20,7 @@ print "ok 1\n";
 
 &get_logon;
 $conn=&R3::rfcapi::r3_new_conn($client,
-	$usr, $passwd, "E", $host, $sysnr, "", "", 1);
+	$usr, $passwd, "E", $host, $sysnr, "", "", 0);
 if ($conn)
 {
 	print "ok 2\n";

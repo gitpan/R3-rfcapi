@@ -1,5 +1,8 @@
 Revision history for Perl extension R3::rfcapi.
 
+0.31  1999-11-10  schoen
+	Better support for N/NUMC/TYPNUM (character fields with only numbers).
+
 0.30  1999-11-05  schoen
 	Added support for R/3 release < 40A.
 	

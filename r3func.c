@@ -17,6 +17,9 @@
 		don't allocate interface buffer for tables and exceptions
 		added support for R/3 pre 40A
  
+	0.31	1999-11-10	schoen
+		handle NUMC different from CHAR	
+
 */
 
 #include <memory.h>
@@ -681,6 +684,11 @@ int r3_set_exp_val(H_R3RFC_FUNC h, int ino, char * value)
 				h->exporting[eno].leng,
 				value);	
 			break;
+		case TYPNUM:
+			r3_setnum(h->exporting[eno].addr,
+				h->exporting[eno].leng,
+				value);	
+			break;
 		case TYPX:
 			r3_setbyte(h->exporting[eno].addr,
 				h->exporting[eno].leng,
@@ -739,6 +747,9 @@ char * r3_get_imp_val(H_R3RFC_FUNC h, int ino)
 	{
 		case TYPC:
 			return r3_getchar(h->importing[eno].addr,
+				h->importing[eno].leng);	
+		case TYPNUM:
+			return r3_getnum(h->importing[eno].addr,
 				h->importing[eno].leng);	
 		case TYPX:
 			return r3_getbyte(h->importing[eno].addr,
