@@ -9,6 +9,9 @@
 
 	0.20	1999-10-28	schoen
 		last changes before first upload to CPAN
+
+	0.21	1999-11-02	schoen
+		fixed mem dealloc bug in r3_del_itab
 */
 
 
@@ -281,7 +284,7 @@ H_R3RFC_ITAB r3_new_itab(H_R3RFC_CONN h_conn,
 
 	/* create ITAB */
 	h->h_itab=ItCreate(h->name, h->rec_size, 0, 0);
-	if (thFields==ITAB_NULL)
+	if (h->h_itab==ITAB_NULL)
 	{
 		r3_set_itab_exception("RFC_MEMORY_INSUFFICIENT");
 		r3_del_itab(h);
@@ -299,8 +302,12 @@ H_R3RFC_ITAB r3_new_itab(H_R3RFC_CONN h_conn,
 
 void r3_del_itab(H_R3RFC_ITAB h)
 {
+	if (!h)
+		return;
 	if (h->h_itab != ITAB_NULL)
 		ItDelete(h->h_itab);
+	if (h->fields)
+		free(h->fields);
 	free(h);
 }
 

@@ -10,6 +10,9 @@
 	0.20	1999-10-28	schoen
 		last changes before first upload to CPAN
  
+	0.21	1999-10-28	schoen
+		corrected mem dealloc bug in r3_del_func
+ 
 */
 
 #include <memory.h>
@@ -271,7 +274,7 @@ void r3_del_func(H_R3RFC_FUNC h)
 	int i;
 	if (!h)
 		return;
-	if (!h->interface)
+	if (h->interface)
 	{
 		for (i=0; i<h->n_interface; i++)
 		{
@@ -280,11 +283,11 @@ void r3_del_func(H_R3RFC_FUNC h)
 		}
 		free(h->interface);
 	}
-	if (!h->exporting)
+	if (h->exporting)
 		free(h->exporting);
-	if (!h->importing)
+	if (h->importing)
 		free(h->importing);
-	if (!h->tables)
+	if (h->tables)
 		free(h->tables);
 	free(h);
 }

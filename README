@@ -18,6 +18,9 @@ R3::rfcapi is not intended to be used directly. Use R3::conn, R3::func and
 R3::itab to get an object oriented interface to SAP R/3 remote function
 calls.
 
+The R3::* modules are still under construction; the interface may change
+in future versions.
+
 REQUIREMENTS
 ============
 

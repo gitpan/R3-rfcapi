@@ -1,5 +1,9 @@
 Revision history for Perl extension R3::rfcapi.
 
-0.20  1999-03-22  schoen
-	last changes before first upload to CPAN
+0.21  1999-10-29  schoen
+	Changed test.pl to allow different sysnr than 0.
+	Corrected bug in r3_del_itab and r3_del_func; memory
+	was not freed correctly in 0.20.
 
+0.20  1999-10-28  schoen
+	last changes before first upload to CPAN

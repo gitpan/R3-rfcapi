@@ -20,7 +20,7 @@ print "ok 1\n";
 
 &get_logon;
 $conn=&R3::rfcapi::r3_new_conn($client,
-	$usr, $passwd, "E", $host, 0, "", "", 0);
+	$usr, $passwd, "E", $host, $sysnr, "", "", 0);
 if ($conn)
 {
 	print "ok 2\n";
@@ -28,7 +28,7 @@ if ($conn)
 }
 else
 {
-	print "not ok 2 - is Host correct?\n";
+	print "not ok 2 - are Host and Sysnr correct?\n";
 	print "skipping test 3 and 4\n";
 }
 
@@ -63,6 +63,7 @@ sub get_logon
 	print "Please provide logon information for test connection to R/3: \n";
 	print "Client: "; $client=<>; chop $client;
 	print "User: "; $usr=<>; chop $usr;
-	print "Passwd (WARNING ECHOED!): "; $passwd=<>; chop $passwd;
+	print "Passwd (WARNING! PASSWD IS ECHOED): "; $passwd=<>; chop $passwd;
 	print "Host: "; $host=<>; chop $host;
+	print "Sysnr: "; $sysnr=<>; chop $sysnr;
 }
