@@ -12,6 +12,10 @@
 
 	0.21	1999-11-02	schoen
 		fixed mem dealloc bug in r3_del_itab
+
+	0.30	1999-11-09	schoen
+		added support for R/3 release pre 40A
+		added function r3_clear_itab_fields
 */
 
 
@@ -25,6 +29,7 @@
 #include "r3rfc.h"
 
 typedef RFC_CHAR X030L_TABNAME[30];
+typedef RFC_CHAR PRE4_X030L_TABNAME[10];
 typedef RFC_INT RFC_FIELDS_INTLENGTH;
 
 typedef struct {
@@ -36,11 +41,30 @@ typedef struct {
   RFC_INT Decimals;
   RFC_CHAR Exid[1]; } RFC_FIELDS;
 
-static RFC_TYPEHANDLE handleOfRFC_FIELDS;
+typedef struct {
+  RFC_CHAR Tabname[10];
+  RFC_CHAR Fieldname[10];
+  RFC_INT Position;
+  RFC_INT Offset;
+  RFC_INT Intlength;
+  RFC_INT Decimals;
+  RFC_CHAR Exid[1]; } RFC3FIELDS;
 
-static RFC_TYPE_ELEMENT typeOfRFC_FIELDS[] = {
+static RFC_TYPEHANDLE h_RFC_FIELDS;
+static RFC_TYPEHANDLE h_RFC3FIELDS;
+
+static RFC_TYPE_ELEMENT t_RFC_FIELDS[] = {
   {"TABNAME", TYPC, 30, 0},
   {"FIELDNAME", TYPC, 30, 0},
+  {"POSITION", TYPINT, sizeof(RFC_INT), 0},
+  {"OFFSET", TYPINT, sizeof(RFC_INT), 0},
+  {"INTLENGTH", TYPINT, sizeof(RFC_INT), 0},
+  {"DECIMALS", TYPINT, sizeof(RFC_INT), 0},
+  {"EXID", TYPC, 1, 0}, };
+
+static RFC_TYPE_ELEMENT t_RFC3FIELDS[] = {
+  {"TABNAME", TYPC, 10, 0},
+  {"FIELDNAME", TYPC, 10, 0},
   {"POSITION", TYPINT, sizeof(RFC_INT), 0},
   {"OFFSET", TYPINT, sizeof(RFC_INT), 0},
   {"INTLENGTH", TYPINT, sizeof(RFC_INT), 0},
@@ -124,6 +148,182 @@ static int install_structure(H_R3RFC_ITAB h)
 	return 666; /* should never be reached */;
 } 
 
+H_R3RFC_ITAB r3_pre4_new_itab(H_R3RFC_CONN h_conn,
+			char * table_name)
+{
+	static H_R3RFC_ITAB h;
+	static RFC_FIELDS_INTLENGTH iTablength;
+	static PRE4_X030L_TABNAME eTabname;
+	RFC_PARAMETER Exporting[2];
+	RFC_PARAMETER Importing[2];
+	RFC_TABLE Tables[2];
+	RFC_RC RfcRc;
+	char *RfcException = NULL;
+	ITAB_H thFields;
+	int i;
+	RFC3FIELDS * tFields;
+
+	/* install structures */
+	if (h_RFC3FIELDS==0) 
+	{
+		RfcRc = RfcInstallStructure("RFC3FIELDS",
+                               t_RFC3FIELDS,
+                               ENTRIES(t_RFC3FIELDS),
+                               &h_RFC3FIELDS);
+    		if (RfcRc != RFC_OK)
+		{
+			if (RfcRc == RFC_MEMORY_INSUFFICIENT)
+				r3_set_itab_exception("RFC_MEMORY_INSUFFICIENT");
+			else
+				r3_set_itab_exception("UNKNOWN_ERROR");
+			return NULL;
+		}
+	}
+
+	/* define export params */
+	memset(eTabname, ' ', sizeof(eTabname));
+	strncpy((char *)eTabname, table_name, strlen(table_name));
+
+	Exporting[0].name = "TABNAME";
+	Exporting[0].nlen = 7;
+	Exporting[0].type = TYPC;
+	Exporting[0].leng = sizeof(PRE4_X030L_TABNAME);
+	Exporting[0].addr = eTabname;
+
+	Exporting[1].name = NULL;
+
+	/* define internal tables */
+	thFields=ItCreate("FIELDS", sizeof(RFC3FIELDS), 0, 0);
+	if (thFields==ITAB_NULL)
+	{
+		r3_set_itab_exception("RFC_MEMORY_INSUFFICIENT");
+		return NULL;
+	}
+
+	Tables[0].name     = "FIELDS";
+	Tables[0].nlen     = 6;
+	Tables[0].type     = h_RFC3FIELDS;
+	Tables[0].ithandle = thFields;
+	Tables[0].leng     = sizeof(RFC3FIELDS);
+
+	Tables[1].name = NULL;
+
+	/* define import params */
+
+	Importing[0].name = "TABLENGTH";
+	Importing[0].nlen = 9;
+	Importing[0].type = TYPINT;
+	Importing[0].leng = sizeof(RFC_FIELDS_INTLENGTH);
+	Importing[0].addr = &iTablength;
+
+	Importing[1].name = NULL;
+
+	/* call function module */
+	RfcRc = RfcCallReceive(h_conn->h_rfc,
+		"RFC_GET_STRUCTURE_DEFINITION",
+		Exporting,
+		Importing,
+		Tables,
+		&RfcException);
+	if (RfcRc != RFC_OK)
+	{
+		switch (RfcRc)
+		{
+		case RFC_FAILURE:
+			r3_set_rfc_sys_exception("RFC_FAILURE");
+			break;
+		case RFC_EXCEPTION:
+			r3_set_rfc_exception(RfcException);
+			break;
+		case RFC_SYS_EXCEPTION:
+			r3_set_rfc_sys_exception(RfcException);
+			break;
+		case RFC_CALL:
+			r3_set_rfc_exception("RFC_CALL");
+			break;
+		default:
+			r3_set_rfcapi_exception("UNKNOWN_ERROR");
+		}
+		ItDelete(thFields);
+		return NULL;
+	}
+
+	/* allocate memory for the table */
+	if (!(h=malloc(sizeof(R3RFC_ITAB))))	
+	{
+		r3_set_rfcapi_exception("MALLOC_FAILED");
+		ItDelete(thFields);
+		return NULL;
+	}
+	memset(h, 0, sizeof(R3RFC_ITAB));
+	h->h_conn=h_conn;
+	h->h_itab=ITAB_NULL;
+	h->rec_size=iTablength;
+	strcpy(h->name, table_name);
+
+	/* get table definition */
+	h->n_fields=ItFill(thFields);
+	h->fields=malloc(h->n_fields*sizeof(R3RFC_ITABDEF));
+	if (h->fields==NULL)
+	{
+		r3_set_rfcapi_exception("MALLOC_FAILED");
+		r3_del_itab(h);
+		ItDelete(thFields);
+		return NULL;
+	}
+	memset(h->fields, 0, h->n_fields*sizeof(R3RFC_ITABDEF));
+	for (i=0; i<h->n_fields; i++)
+	{
+		tFields=ItGetLine(thFields, i+1);
+		if (tFields  == NULL)
+		{
+			r3_set_itab_exception("RFC_MEMORY_INSUFFICIENT");
+			r3_del_itab(h);
+			ItDelete(thFields);
+			return NULL;
+		}
+	
+		strncpy(h->fields[i].tabname,
+			(char *)tFields->Tabname,
+			sizeof(tFields->Tabname));
+		r3_stbl(h->fields[i].tabname);
+
+		strncpy(h->fields[i].fieldname,
+			tFields->Fieldname,
+			sizeof(tFields->Fieldname));
+		r3_stbl(h->fields[i].fieldname);
+
+		strncpy(h->fields[i].exid,
+			tFields->Exid,
+			sizeof(tFields->Exid));
+		r3_stbl(h->fields[i].exid);
+
+		h->fields[i].position=tFields->Position;
+		h->fields[i].offset=tFields->Offset;
+		h->fields[i].intlength=tFields->Intlength;
+		h->fields[i].decimal=tFields->Decimals;
+	}
+
+	/* delete table */
+	ItDelete(thFields);
+
+	/* create ITAB */
+	h->h_itab=ItCreate(h->name, h->rec_size, 0, 0);
+	if (h->h_itab==ITAB_NULL)
+	{
+		r3_set_itab_exception("RFC_MEMORY_INSUFFICIENT");
+		r3_del_itab(h);
+		return NULL;
+	}
+
+	if (install_structure(h))
+	{
+		r3_del_itab(h);
+		return NULL;
+	}
+	return h;
+}
+
 H_R3RFC_ITAB r3_new_itab(H_R3RFC_CONN h_conn,
 			char * table_name)
 {
@@ -139,13 +339,16 @@ H_R3RFC_ITAB r3_new_itab(H_R3RFC_CONN h_conn,
 	int i;
 	RFC_FIELDS * tFields;
 
+	if (h_conn->pre4)
+		return r3_pre4_new_itab(h_conn, table_name);
+
 	/* install structures */
-	if (handleOfRFC_FIELDS==0) 
+	if (h_RFC_FIELDS==0) 
 	{
 		RfcRc = RfcInstallStructure("RFC_FIELDS",
-                               typeOfRFC_FIELDS,
-                               ENTRIES(typeOfRFC_FIELDS),
-                               &handleOfRFC_FIELDS);
+                               t_RFC_FIELDS,
+                               ENTRIES(t_RFC_FIELDS),
+                               &h_RFC_FIELDS);
     		if (RfcRc != RFC_OK)
 		{
 			if (RfcRc == RFC_MEMORY_INSUFFICIENT)
@@ -178,8 +381,9 @@ H_R3RFC_ITAB r3_new_itab(H_R3RFC_CONN h_conn,
 
 	Tables[0].name     = "FIELDS";
 	Tables[0].nlen     = 6;
-	Tables[0].type     = handleOfRFC_FIELDS;
+	Tables[0].type     = h_RFC_FIELDS;
 	Tables[0].ithandle = thFields;
+	Tables[0].leng     = sizeof(RFC_FIELDS);
 
 	Tables[1].name = NULL;
 
@@ -371,6 +575,56 @@ int r3_set_field_value(H_R3RFC_ITAB h, char * field, char * value)
 		return 1;
 	}
 	return r3_set_f_val(h, fino, value);
+}
+
+int r3_clear_itab_fields(H_R3RFC_ITAB h)
+{
+	int fino;
+	char * value;
+	value="";
+	if (h->curr_row==NULL)
+	{
+		r3_set_itab_exception("ROW_DOES_NOT_EXIST");
+		return 2;
+	}
+	for (fino=0; fino<h->n_fields; fino++)
+	{
+		switch(r3_exid2type(h->fields[fino].exid[0]))
+		{
+			case TYPC:
+				r3_setchar(h->curr_row+h->fields[fino].offset,
+					h->fields[fino].intlength, value);	
+				break;
+			case TYPX:
+				r3_setbyte(h->curr_row+h->fields[fino].offset,
+					h->fields[fino].intlength, value);	
+				break;
+			case TYPP:
+				r3_setbcd(h->curr_row+h->fields[fino].offset,
+					h->fields[fino].intlength,
+					h->fields[fino].decimal, value);	
+				break;
+			case TYPINT:
+				r3_setint((long *) h->curr_row +
+					h->fields[fino].offset, value);	
+				break;
+			case TYPFLOAT:
+				r3_setfloat((double *) h->curr_row +
+					h->fields[fino].offset, value);	
+				break;
+			case TYPDATE:
+				r3_setdate(h->curr_row +
+					h->fields[fino].offset, value);	
+				break;
+			case TYPTIME:
+				r3_settime(h->curr_row+h->fields[fino].offset,
+					value);	
+				break;
+			default:
+				return 1;
+		}
+	}
+	return 0;
 }
 
 int r3_set_f_val(H_R3RFC_ITAB h, int fino, char * value)

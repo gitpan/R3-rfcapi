@@ -10,6 +10,8 @@
 	0.20	1999-10-28	schoen
 		last changes before first upload to CPAN
 
+	0.30	1999-11-05	schoen
+		added support for R/3 pre 40A
 */
 
 #include <stdlib.h>
@@ -79,6 +81,11 @@ void r3_del_conn(H_R3RFC_CONN h)
 {
 	RfcClose(h->h_rfc);
 	free(h);
+}
+
+void r3_set_pre4(H_R3RFC_CONN h)
+{
+	h->pre4=1;
 }
 
 /* EOF r3conn.c */

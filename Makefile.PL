@@ -1,8 +1,12 @@
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
 
-# select libs depending on UNIX platform
+# change next line if RFCSDK is installed somewhere else on Linux/UNIX
+$rfcsdk_dir='/usr/sap/rfcsdk';
+
+# change next line if RFCSDK is installed somewhere else on Windows NT
+$rfcsdk_nt='C:\usr\sap\rfcsdk';
+
+# libs depending on UNIX platform
 $ljbs='-lrfc';
 $ljbs='-lrfc' if $^O eq 'aix';
 $ljbs='-lrfc -lsocket -lnsl -ldl -lm -lw' if $^O eq 'solaris';
@@ -12,7 +16,7 @@ $ljbs='-lrfc -ldl -lm -lpthread' if $^O eq "linux";
 
 if ($^O ne "MSWin32") # Makefile for UNIX
 {
-	if (-e '/usr/sap/rfcsdk')
+	if (-e $rfcsdk_dir)
 	{
 		WriteMakefile(
 		'NAME'	=> 'R3::rfcapi',
@@ -22,33 +26,34 @@ if ($^O ne "MSWin32") # Makefile for UNIX
 		'DEFINE'	=> '',  
 		'OBJECT' => 'rfcapi.o r3rfc.o r3conn.o ' .
 			'r3func.o r3itab.o r3errh.o',
-		'INC'	=> '-I/usr/sap/rfcsdk/include', 
+		'INC'	=> "-I$rfcsdk_dir/include", 
 		'XSOPT' => '-prototypes',
 		);
 	}
 	else
 	{
-		print "RFCSDK not found at /usr/sap/rfcsdk.\n";
+		print "RFCSDK not found at $rfcsdk_dir.\n";
 		print "Install RFCSDK or change Makefile.PL!\n";
 	}
 }
 else # Makefile for Windows NT
 {
-	if (-e 'C:\usr\sap\rfcsdk')
+	if (-e $rfcsdk_nt)
 	{
 		WriteMakefile(
 		'NAME'	=> 'R3::rfcapi',
 		'VERSION_FROM' => 'rfcapi.pm', # finds $VERSION
 		'DEFINE'	=> '',  
 		'OBJECT' => 'rfcapi.o r3rfc.o r3conn.o r3func.o ' .
-			'r3itab.o r3errh.o C:\usr\sap\rfcsdk\lib\librfc32.lib',
-		'INC'	=> '/IC:\usr\sap\rfcsdk\include', 
+			'r3itab.o r3errh.o ' .
+			$rfcsdk_nt . '\lib\librfc32.lib',
+		'INC'	=> "/I$rfcsdk_nt\\include", 
 		'XSOPT' => '-prototypes',
 	);
 	}
 	else
 	{
-		print "RFCSDK not found at C:\\usr\\sap\\rfcsdk.\n";
+		print "RFCSDK not found at $rfcsdk_nt.\n";
 		print "Install RFCSDK or change Makefile.PL!\n";
 	}
 }

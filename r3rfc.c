@@ -8,6 +8,9 @@
 
 	0.20	1999-10-28	schoen
 		last changes before first upload to CPAN
+
+	0.30	1999-11-06	schoen
+		changed format string in r3_getfloat
 */
 
 #include <memory.h>
@@ -76,7 +79,7 @@ void r3_setfloat(double * var, char * str)
 
 char * r3_getfloat(double * var)
 {
-	sprintf(buf, "%23.16e", *var);
+	sprintf(buf, "%.23e", *var);
 	return buf;
 }
 

@@ -20,10 +20,15 @@ print "ok 1\n";
 
 &get_logon;
 $conn=&R3::rfcapi::r3_new_conn($client,
-	$usr, $passwd, "E", $host, $sysnr, "", "", 0);
+	$usr, $passwd, "E", $host, $sysnr, "", "", 1);
 if ($conn)
 {
 	print "ok 2\n";
+	if ($pre4 =~ m/^y.*/i)
+	{
+		print "R/3 < 40A\n";
+		&R3::rfcapi::r3_set_pre4($conn);
+	}
 	&test_3_4;
 }
 else
@@ -66,4 +71,5 @@ sub get_logon
 	print "Passwd (WARNING! PASSWD IS ECHOED): "; $passwd=<>; chop $passwd;
 	print "Host: "; $host=<>; chop $host;
 	print "Sysnr: "; $sysnr=<>; chop $sysnr;
+	print "R/3 release on $host < 40A (yes/no)? : "; $pre4=<>; chop $pre4;
 }

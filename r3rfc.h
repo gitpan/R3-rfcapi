@@ -6,11 +6,15 @@
 
 	0.02	1999-03-23	schoen
 		minor changes
+
+	0.30	1999-11-05	schoen
+		added support for R/3 release < 40A
 */
 
 typedef struct {
 	RFC_HANDLE h_rfc;
 	int error;
+	int pre4; /* should be set if R/3 release is before 40A */
 	char * exception_type;
 	char * exception;
 	RFC_ERROR_INFO rfc_error_info;
@@ -79,6 +83,7 @@ H_R3RFC_CONN r3_new_conn(char * client,
 			char * gwservice,
 			int trace);
 void r3_del_conn(H_R3RFC_CONN h);
+void r3_set_pre4(H_R3RFC_CONN h);
 
 void r3_rfc_clear_error();
 void r3_set_rfc_exception(char * exception);

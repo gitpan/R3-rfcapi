@@ -1,5 +1,8 @@
 Revision history for Perl extension R3::rfcapi.
 
+0.30  1999-11-05  schoen
+	Added support for R/3 release < 40A.
+	
 0.21  1999-10-29  schoen
 	Changed test.pl to allow different sysnr than 0.
 	Corrected bug in r3_del_itab and r3_del_func; memory

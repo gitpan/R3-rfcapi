@@ -12,7 +12,7 @@ require DynaLoader;
 @EXPORT = qw( );
 @EXPORT_OK = qw( );
 
-$VERSION = '0.21';
+$VERSION = '0.30';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -51,12 +51,15 @@ R3::rfcapi - Perl extension for SAP's rfcsdk
 
 =head1 SYNOPSIS
 
-  require R3::rfcapi;
+  use R3::rfcapi;
 
 =head1 DESCRIPTION
 
+R3::rfcapi is required by R3, R3::conn, R3::func and R3::itab.
 The R3::rfcapi is not intended to be used directly. Use R3::conn,
 R3::func and R3::itab which are the object interfaces. 
+
+To compile and install R3::rfcapi you need RFCSDK from SAP AG.
 
 =head1 AUTHOR
 
@@ -64,6 +67,7 @@ Johan Schoen, johan.schon@capgemini.se
 
 =head1 SEE ALSO
 
-perl(1), R3::conn(3), R3::func(3), R3::itab(3) and SAP's rfcsdk documentation.
+perl(1), R3(3), R3::conn(3), R3::func(3), R3::itab(3)
+and SAP's rfcsdk documentation.
 
 =cut

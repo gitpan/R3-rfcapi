@@ -1,15 +1,19 @@
+/*
+	rfcapi.xs
+	Copyright (c) 1999 Johan Schoen. All rights reserved.
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "saprfc.h"
+#include "r3rfc.h"
 #ifdef __cplusplus
 }
 #endif
-
-#include "saprfc.h"
-#include "r3rfc.h"
 
 static int
 not_here(s)
@@ -58,6 +62,10 @@ r3_new_conn(client, user, passwd, lang, host, sys, gwhost, gwserv, trace)
 
 void
 r3_del_conn(h_conn)
+	H_R3RFC_CONN h_conn
+
+void
+r3_set_pre4(h_conn)
 	H_R3RFC_CONN h_conn
 
 H_R3RFC_FUNC 
@@ -220,3 +228,10 @@ int
 r3_set_record(h, value)
 	H_R3RFC_ITAB h
 	char * value
+
+int
+r3_clear_itab_fields(h)
+	H_R3RFC_ITAB h
+
+
+
