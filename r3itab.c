@@ -19,6 +19,9 @@
 
 	0.31	1999-11-10	schoen
 		added special support for NUMC/N/TYPNUM
+
+	0.32 	1999-11-15	schoen
+		corrected handling of TYPINT and TYPFLOAT
 */
 
 
@@ -612,11 +615,11 @@ int r3_clear_itab_fields(H_R3RFC_ITAB h)
 					h->fields[fino].decimal, value);	
 				break;
 			case TYPINT:
-				r3_setint((long *) h->curr_row +
+				r3_setint(h->curr_row +
 					h->fields[fino].offset, value);	
 				break;
 			case TYPFLOAT:
-				r3_setfloat((double *) h->curr_row +
+				r3_setfloat(h->curr_row +
 					h->fields[fino].offset, value);	
 				break;
 			case TYPDATE:
@@ -670,11 +673,11 @@ int r3_set_f_val(H_R3RFC_ITAB h, int fino, char * value)
 				value);	
 			break;
 		case TYPINT:
-			r3_setint((long *) h->curr_row+h->fields[fino].offset,
+			r3_setint(h->curr_row+h->fields[fino].offset,
 				value);	
 			break;
 		case TYPFLOAT:
-			r3_setfloat((double *) h->curr_row +
+			r3_setfloat(h->curr_row +
 				h->fields[fino].offset, value);	
 			break;
 		case TYPDATE:
@@ -721,9 +724,9 @@ char * r3_get_f_val(H_R3RFC_ITAB h, int fino)
 				h->fields[fino].intlength,
 				h->fields[fino].decimal);	
 		case TYPINT:
-			return r3_getint((long *)h->curr_row+h->fields[fino].offset);	
+			return r3_getint(h->curr_row+h->fields[fino].offset);	
 		case TYPFLOAT:
-			return r3_getfloat((double *)h->curr_row+h->fields[fino].offset);
+			return r3_getfloat(h->curr_row+h->fields[fino].offset);
 		case TYPDATE:
 			return r3_getdate(h->curr_row+h->fields[fino].offset);
 		case TYPTIME:

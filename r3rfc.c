@@ -82,25 +82,33 @@ char * r3_getdate(char * var)
 	return buf;
 }
 
-void r3_setfloat(double * var, char * str)
+void r3_setfloat(void * var, char * str)
 {
-	*var=atof(str);
+	RFC_FLOAT f;
+	f=atof(str);
+	memcpy(var, &f, sizeof(f));
 }
 
-char * r3_getfloat(double * var)
+char * r3_getfloat(void * var)
 {
-	sprintf(buf, "%.23e", *var);
+	RFC_FLOAT f;
+	memcpy(&f, var, sizeof(f));
+	sprintf(buf, "%.23e", f);
 	return buf;
 }
 
-void r3_setint(long * var, char * str)
+void r3_setint(void * var, char * str)
 {
-	*var=atol(str);
+	RFC_INT l;
+	l=atol(str);
+	memcpy(var, &l, sizeof(l));
 }
 
-char * r3_getint(long * var)
+char * r3_getint(void * var)
 {
-	sprintf(buf, "%ld", *var);
+	RFC_INT l;
+	memcpy(&l, var, sizeof(l));
+	sprintf(buf, "%ld", (long) l);
 	return buf;
 }
 

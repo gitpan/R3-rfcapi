@@ -15,9 +15,9 @@ software owned by SAP AG. The RFCSDK is not delivered with R3::rfcapi.
 INTRODUCTION
 ============
 
-R3::rfcapi is not intended to be used directly. Use R3 version 0.30 or
-later, which includes R3::conn, R3::func and R3::itab, to get an object
-oriented interface to SAP R/3 remote function calls. 
+R3::rfcapi is not intended to be used directly. Use R3.pm, which includes
+R3::conn, R3::func and R3::itab, to get an object oriented interface to
+SAP R/3 remote function calls. 
 
 The R3::* modules are still under construction; the interface may change
 in future versions.

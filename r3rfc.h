@@ -9,6 +9,10 @@
 
 	0.30	1999-11-05	schoen
 		added support for R/3 release < 40A
+
+	0.32	1999-11-15	schoen
+		changed prototypes for r3_getint, r3_setint, r3_getfloat
+		and r3_setfloat
 */
 
 typedef struct {
@@ -136,10 +140,10 @@ void r3_setchar(char * var, size_t n, char * str);
 char * r3_getchar(char * var, size_t n);
 void r3_setdate(char * var, char * str);
 char * r3_getdate(char * var);
-void r3_setfloat(double * var, char * str);
-char * r3_getfloat(double * var);
-void r3_setint(long * var, char * str);
-char * r3_getint(long * var);
+void r3_setfloat(void * var, char * str);
+char * r3_getfloat(void * var);
+void r3_setint(void * var, char * str);
+char * r3_getint(void * var);
 void r3_setnum(char * var, size_t n, char * str);
 char * r3_getnum(char * var, size_t n);
 void r3_settime(char * var, char * str);

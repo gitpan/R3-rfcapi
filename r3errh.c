@@ -7,6 +7,9 @@
 	0.20	1999-10-28	schoen
 		last changes before first upload to CPAN
 
+	0.32	1999-11-15	schoen
+		better handling of "unknown" exceptions in function calls
+
 */
 
 #include <stdlib.h>
@@ -36,13 +39,13 @@ void r3_set_rfc_exception(char * exception)
 void r3_set_f_rfc_exception(H_R3RFC_FUNC h, char * exception)
 {
 	int ino;
-	e_error=1;
-	e_exception_type="RFC_EXCEPTION";
-	e_exception=exception;
 	memset(&e_rfc_error_info, 0, sizeof(e_rfc_error_info));
 	ino=r3_get_ino(h, "X", exception);
 	if (ino>=0 && ino<=h->n_interface)
 		strcpy(e_rfc_error_info.message, h->interface[ino].paramtext);
+	e_error=1;
+	e_exception_type="RFC_EXCEPTION";
+	e_exception=exception;
 }
 
 void r3_set_rfc_sys_exception(char * exception)
